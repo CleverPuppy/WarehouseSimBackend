@@ -23,6 +23,7 @@ public:
     void run();
 
 private:
+    int connection_watch_dog = 3;
     struct event_base *base;
     sockaddr_in sin{0};
     struct event *read_event;
@@ -32,6 +33,9 @@ private:
     void init();
     void clear();
 
+    // handling socket related situation
+    void conn_norespond_cb();
+    void conn_error_cb();
 
     // cb functions
     static void read_cb(evutil_socket_t fd,
@@ -59,12 +63,12 @@ void SimClientNoBuffer<SendMessage, RecvMessage>::init()
     inet_aton(HOST_IP, &sin.sin_addr);
 
     // socket
+    libevent_init_successful = true;
     fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd == -1)
     {
         fprintf(stderr, "SimClientNoBuffer:init:socket failed\n");
         libevent_init_successful = false;
-        return;
     }
     else
     {
@@ -75,7 +79,6 @@ void SimClientNoBuffer<SendMessage, RecvMessage>::init()
         {
             fprintf(stderr, "SimClientNoBuffer:init:connect error\n");
             libevent_init_successful = false;
-            return;
         }
         // init libevent
         base = event_base_new();
@@ -83,11 +86,14 @@ void SimClientNoBuffer<SendMessage, RecvMessage>::init()
         {
             fprintf(stderr, "SimClientNoBuffer:init:event_base_new failed\n");
             libevent_init_successful = false;
-            return;
         }
         // init event
         read_event = event_new(base, fd, EV_READ | EV_PERSIST | EV_TIMEOUT, read_cb, this);
-        event_add(read_event, &timeout_val);
+        if(read_event){
+            event_add(read_event, &timeout_val);
+        }else{
+            std::cout << "event_new error : " << strerror(errno) << std::endl;
+        }
     }
 }
 
@@ -98,11 +104,37 @@ void SimClientNoBuffer<SendMessage, RecvMessage>::clear()
     {
         event_base_loopbreak(base);
     }
-        evutil_closesocket(fd);
     if (read_event)
         event_free(read_event);
     if (base)
         event_base_free(base);
+    evutil_closesocket(fd);
+}
+
+
+template<typename SendMessage, typename RecvMessage>
+void SimClientNoBuffer<SendMessage, RecvMessage>::conn_norespond_cb() 
+{
+    #ifndef NODEBUG
+    std::cout<< "read more than 3 times 0 bytes from socket , fd: " << event_get_fd(this->read_event)
+        << ", to break loop and delete event " << std::endl;
+    #endif 
+    event_base_loopbreak(this->base);
+    event_del(this->read_event);
+    event_free(this->read_event);
+    this->read_event = NULL;
+    evutil_closesocket(fd);
+}
+
+
+template<typename SendMessage, typename RecvMessage>
+void SimClientNoBuffer<SendMessage, RecvMessage>::conn_error_cb() 
+{
+    #ifndef NODEBUG
+    std::cout << "conn_error_cb, fd: " << event_get_fd(this->read_event) 
+        <<", error is : " << strerror(errno) << std::endl;
+    #endif
+    
 }
 
 template <typename SendMessage, typename RecvMessage>
@@ -131,27 +163,46 @@ void SimClientNoBuffer<SendMessage, RecvMessage>::read_cb(evutil_socket_t fd,
            (what & EV_SIGNAL) ? " signal" : "");
     #endif
     
+    SimClientNoBuffer<SendMessage, RecvMessage>* client = (SimClientNoBuffer<SendMessage, RecvMessage>*) arg;
 
-    if(what & EV_READ){
+    if (what & EV_READ)
+    {
         RecvMessage _recv{};
         char msg[1000];
-        size_t len = read(fd,(void*)msg,sizeof(msg));
-        if(len > 0 && MessageHelper::parseFromArray(&_recv,(void*)msg,len))
+        size_t len = read(fd, (void *)msg, sizeof(msg));
+        if (len > 0 && MessageHelper::parseFromArray(&_recv, (void *)msg, len))
         {
             printf("Simulate tobe coded !  \n");
-            if(MessageHelper::sendScheduleRequestToFD(fd,1110,2,3,1.f) < 0){
+            if (MessageHelper::sendScheduleRequestToFD(fd, 1110, 2, 3, 1.f) < 0)
+            {
              std::cout << "sendScheduleRequestToFD failed : "
                 << strerror(errno) << std::endl;               
             }
+                //reset watch dog
+            client -> connection_watch_dog = 3;
         }
-        else if(len == 0){
+        else if (len == 0)
+        {
             // EOF
-        }else{
-            // -1 error
+            client -> connection_watch_dog --;
+            if(client->connection_watch_dog <= 0){
+                client -> conn_norespond_cb();
+                return;
+            }
         }
-    }else if(what & EV_TIMEOUT){
+        else
+        {
+            // -1 error
+            #ifndef NDEBUG
+            std::cout << "socket read return -1 , error is : " << strerror(errno) << std::endl;
+            #endif
+        }
+    }
+    else if (what & EV_TIMEOUT)
+    {
         //  read timeout , should resend state msg
-        if(MessageHelper::sendScheduleRequestToFD(fd,1110,1,1,1.f) < 0 ){
+        if (MessageHelper::sendScheduleRequestToFD(fd, 1110, 1, 1, 1.f) < 0)
+        {
             std::cout << "sendScheduleRequestToFD failed : "
                 << strerror(errno) << std::endl;
         }

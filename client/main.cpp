@@ -1,6 +1,5 @@
 #include "../protobuf/robotrequest.pb.h"
 #include "../protobuf/robotresponse.pb.h"
-#include "simclient.h"
 #include "simclientnobuffer.h"
 
 #include "sys/socket.h"
