@@ -1,7 +1,5 @@
 #include "simserver.h"
 
-char* MESSAGE = "Hello World";
-
 SimServer::SimServer(char* addr, int port)
 {
 	base = event_base_new();
@@ -65,22 +63,37 @@ void SimServer::listener_cb(evconnlistener* listener, evutil_socket_t fd, struct
 	}
 
 	bufferevent_setcb(bev, conn_readcb, nullptr, conn_eventcb, nullptr);
-	bufferevent_disable(bev, EV_WRITE);
 	bufferevent_enable(bev, EV_READ);
-
-	bufferevent_write(bev, MESSAGE, strlen(MESSAGE));
+	bufferevent_disable(bev, EV_WRITE);
 }
 
 
 void SimServer::conn_readcb(bufferevent* bev, void* user_data)
 {
-	evbuffer* reader = bufferevent_get_input(bev);
-	int len = evbuffer_get_length(reader);
-	char buf[len];
+	char msg[1400];
+	size_t len = bufferevent_read(bev,msg,sizeof(msg));
 	
-	bufferevent_read(bev, buf, len);
+	warehousesim::RobotRequest request;
+	if(MessageHelper::parseFromArray(&request,(void*)msg,len)){
+		if(request.type() == warehousesim::RequestType::SCHEDULE)
+		{
+			// log
 
-	printf("read data : %s\n", buf);
+			// get
+
+			warehousesim::ScheduleAction action = warehousesim::ScheduleAction::HOLD;
+
+			//
+			MessageHelper::sendScheduleActionToFD(bufferevent_getfd(bev),
+			 request.token(), request.session_id(),
+			action);
+		}
+		
+		if(request.type() == warehousesim::RequestType::MOTIONPLAN)
+		{
+
+		}
+	}
 }
 
 void SimServer::conn_eventcb(bufferevent* bev, short events, void* user_data)
