@@ -22,8 +22,6 @@ SimServer::SimServer(char* addr, int port)
 		fprintf(stderr, "Could not create a listener!\n");
 		init_success = false;
 	}
-
-	event_base_dispatch(base);
 }
 
 SimServer::~SimServer()
