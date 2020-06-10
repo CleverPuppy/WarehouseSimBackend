@@ -39,11 +39,11 @@ public:
 
     SimServer(char* addr, int port);
     ~SimServer();
+    void run();
 
 private:
     // clean functions
     void clear();
-    void run();
     bool init_success;
 
     // callback functions
