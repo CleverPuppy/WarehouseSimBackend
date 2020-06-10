@@ -7,7 +7,7 @@ src_proto = $(wildcard ./protobuf/*.cc)
 obj_proto = $(patsubst %.cc,$(outdir)/%.o,$(src_proto))
 
 src_client = $(wildcard ./client/*.cpp)
-obj_client = $(patsubst %.cpp, $(outdir)/%.o,$(src_client)) messagehelper.o
+obj_client = $(patsubst %.cpp, $(outdir)/%.o,$(src_client)) $(outdir)/messagehelper.o
 
 
 target_server = server_app
@@ -18,10 +18,10 @@ COMPILE_ARGS = -Wall -ggdb
 all:$(targets)
 
 $(target_server):$(obj) $(obj_proto)
-	$(CC)  $(COMPILE_ARGS) $(obj) $(obj_proto) -o $(outdir)/$(target_server) -levent -levent_core -lprotobuf
+	$(CC)  $(COMPILE_ARGS) $(obj) $(obj_proto) -o $(outdir)/$(target_server) -levent -levent_core -lprotobuf -pthread
 
 $(target_client):$(obj_client) $(obj_proto)
-	$(CC)  $(COMPILE_ARGS) $(obj_client) $(obj_proto) -o $(outdir)/$(target_client) -levent -levent_core -lprotobuf
+	$(CC)  $(COMPILE_ARGS) $(obj_client) $(obj_proto) -o $(outdir)/$(target_client) -levent -levent_core -lprotobuf -pthread
 
 $(outdir)/%.o: %.cpp
 	$(CC) $(COMPILE_ARGS) -c $< -o $@
