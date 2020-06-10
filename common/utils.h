@@ -11,3 +11,9 @@ private:
     noncopyable &operator=(const noncopyable &that) = delete;
     noncopyable &operator=(noncopyable &&that) = delete;
 };
+
+class SimUtils
+{
+public:
+    
+};

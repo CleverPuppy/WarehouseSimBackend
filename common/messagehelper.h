@@ -1,7 +1,7 @@
 #pragma once
 #include <utility>
-#include "protobuf/robotrequest.pb.h"
-#include "protobuf/robotresponse.pb.h"
+#include "../common/robotrequest.pb.h"
+#include "../common/robotresponse.pb.h"
 #include <google/protobuf/message_lite.h>
 
 #include <event2/util.h>

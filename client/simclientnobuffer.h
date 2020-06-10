@@ -9,7 +9,7 @@
 #include <cerrno>
 #include <iostream>
 
-#include "../messagehelper.h"
+#include "../common/messagehelper.h"
 
 const char *HOST_IP = "127.0.0.1";
 const int HOST_PORT = 9995;

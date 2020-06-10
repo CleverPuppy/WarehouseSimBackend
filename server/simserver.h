@@ -17,12 +17,12 @@
 #include <event2/util.h>
 #include <event2/event.h>
 
-#include "utils.h"
+#include "../common/utils.h"
 
 // protobuf
-#include "protobuf/robotrequest.pb.h"
-#include "protobuf/robotresponse.pb.h"
-#include "messagehelper.h"
+#include "../common/robotrequest.pb.h"
+#include "../common/robotresponse.pb.h"
+#include "../common/messagehelper.h"
 
 class SimServer : public noncopyable
 {
