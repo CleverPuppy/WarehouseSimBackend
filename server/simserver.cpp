@@ -2,6 +2,7 @@
 
 SimServer::SimServer(char* addr, int port)
 {
+	init_success = true;
 	base = event_base_new();
 	if (!base) {
 		fprintf(stderr, "Could not initialize libevent!\n");

@@ -1,5 +1,4 @@
-#include "../common/robotrequest.pb.h"
-#include "../common/robotresponse.pb.h"
+#include "../common/robotmessage.pb.h"
 #include "simclientnobuffer.h"
 
 #include "sys/socket.h"

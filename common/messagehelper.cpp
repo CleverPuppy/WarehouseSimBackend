@@ -17,7 +17,7 @@ int MessageHelper::sendMsgToFD(google::protobuf::MessageLite&& msg, int fd)
 
 
 int MessageHelper::sendScheduleRequestToFD(evutil_socket_t fd, int64_t token, int32_t session_id,
-     int64_t istate, float reward) 
+     int64_t istate, float reward, int64_t project_id) 
 {
     warehousesim::RobotRequest _request;
     _request.set_token(token);
@@ -26,6 +26,7 @@ int MessageHelper::sendScheduleRequestToFD(evutil_socket_t fd, int64_t token, in
     _request.set_timestamp(time(NULL));
     _request.set_istate(istate);
     _request.set_reward(reward);
+    _request.set_project_id(project_id);
 
     return sendMsgToFD(std::move(_request),fd);
 }
@@ -44,7 +45,7 @@ int MessageHelper::sendScheduleActionToFD(evutil_socket_t fd, int64_t token, int
 }
 
 int MessageHelper::sendMotionRequestToFD(evutil_socket_t fd, int64_t token, int32_t session_id,
-    std::vector<float>& fstate, float reward) 
+    std::vector<float>& fstate, float reward, int64_t project_id) 
 {
     warehousesim::RobotRequest _request;
     _request.set_timestamp(time(NULL));
@@ -52,6 +53,7 @@ int MessageHelper::sendMotionRequestToFD(evutil_socket_t fd, int64_t token, int3
     _request.set_type(warehousesim::RequestType::MOTIONPLAN);
     _request.set_reward(reward);
     _request.set_session_id(session_id);
+    _request.set_project_id(project_id);
     for(float i : fstate)
     {
         _request.add_fstate(i);

@@ -173,7 +173,7 @@ void SimClientNoBuffer<SendMessage, RecvMessage>::read_cb(evutil_socket_t fd,
         if (len > 0 && MessageHelper::parseFromArray(&_recv, (void *)msg, len))
         {
             printf("Simulate tobe coded !  \n");
-            if (MessageHelper::sendScheduleRequestToFD(fd, 1110, 2, 3, 1.f) < 0)
+            if (MessageHelper::sendScheduleRequestToFD(fd, 1110, 2, 3, 1.f,1) < 0)
             {
              std::cout << "sendScheduleRequestToFD failed : "
                 << strerror(errno) << std::endl;               
@@ -201,7 +201,7 @@ void SimClientNoBuffer<SendMessage, RecvMessage>::read_cb(evutil_socket_t fd,
     else if (what & EV_TIMEOUT)
     {
         //  read timeout , should resend state msg
-        if (MessageHelper::sendScheduleRequestToFD(fd, 1110, 1, 1, 1.f) < 0)
+        if (MessageHelper::sendScheduleRequestToFD(fd, 1110, 1, 1, 1.f,1) < 0)
         {
             std::cout << "sendScheduleRequestToFD failed : "
                 << strerror(errno) << std::endl;

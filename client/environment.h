@@ -11,9 +11,14 @@ public:
 private:
     size_t block_width;
     size_t block_height;
-
-    std::set<int> obs_block_s;
-    std::set<int> rack_block_s;
+    size_t scale;
+    std::set<int> obs_block;
+    std::set<int> rack_block;
 
     std::vector<RobotType> robots;
+
+    bool remote_attached = false;
+
+public:
+    void attachRemote();
 };

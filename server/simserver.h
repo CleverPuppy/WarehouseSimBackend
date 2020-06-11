@@ -20,8 +20,7 @@
 #include "../common/utils.h"
 
 // protobuf
-#include "../common/robotrequest.pb.h"
-#include "../common/robotresponse.pb.h"
+#include "../common/robotmessage.pb.h"
 #include "../common/messagehelper.h"
 
 class SimServer : public noncopyable
